@@ -1,0 +1,20 @@
+# Build
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+Thumbs.db
+.DS_Store
+
+# SQLite database
+*.db
+
+# Logs
+*.log
