@@ -9,7 +9,6 @@ import com.giovanildo.torneiofds.service.PremioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,15 +21,6 @@ public class PremioController {
 
     private final PremioService premioService;
     private final EAtletaService eAtletaService;
-
-    @PostMapping("/torneios/{torneioId}/premios/gerar")
-    @Operation(summary = "Gerar premios do torneio baseado na classificacao final")
-    @ResponseStatus(HttpStatus.CREATED)
-    public List<PremioResponse> gerarPremios(@PathVariable Long torneioId) {
-        return premioService.gerarPremios(torneioId).stream()
-                .map(PremioResponse::from)
-                .toList();
-    }
 
     @GetMapping("/torneios/{torneioId}/premios")
     @Operation(summary = "Listar premios de um torneio")

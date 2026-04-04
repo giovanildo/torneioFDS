@@ -31,11 +31,17 @@ mvn spring-boot:run
 
 A aplicacao sobe em `http://localhost:8080`.
 
-Um usuario admin e clubes iniciais sao criados automaticamente na primeira execucao.
+Na primeira execucao, sao criados automaticamente: usuario admin, clubes iniciais e 13 torneios ficticios com 4 jogadores e premios gerados.
 
 | Login | Senha | Role |
 |---|---|---|
 | admin | admin | ADMIN |
+| giova | 123456 | USER |
+| tiago | 123456 | USER |
+| rafael | 123456 | USER |
+| bruno | 123456 | USER |
+
+Para recriar os dados do zero, delete o arquivo `torneioFDS.db` e reinicie.
 
 ## Documentacao da API
 
@@ -88,9 +94,10 @@ Com a aplicacao rodando, acesse:
 
 | Metodo | Endpoint | Descricao |
 |---|---|---|
-| POST | `/api/torneios/{id}/premios/gerar` | Gerar premios baseado na classificacao final |
 | GET | `/api/torneios/{id}/premios` | Listar premios de um torneio |
 | GET | `/api/eatletas/{id}/trofeus` | Sala de trofeus de um jogador |
+
+> Premios sao gerados automaticamente ao registrar o resultado da ultima partida do torneio.
 
 ### Clubes (autenticado)
 
@@ -156,13 +163,6 @@ curl http://localhost:8080/api/torneios/1/classificacao \
   -u admin:admin
 ```
 
-### Gerar premios
-
-```bash
-curl -X POST http://localhost:8080/api/torneios/1/premios/gerar \
-  -u admin:admin
-```
-
 ### Ver sala de trofeus de um jogador
 
 ```bash
@@ -209,7 +209,7 @@ Premio             ----> reconhece   ----> conquista de um EAtleta em um Torneio
 - Derrota: 0 pontos
 - Desempate: pontos > vitorias > saldo de gols
 
-### Premios automaticos (gerados ao final do torneio)
+### Premios automaticos (gerados ao registrar o ultimo resultado)
 
 | Premio | Criterio |
 |---|---|
@@ -272,6 +272,10 @@ src/main/java/com/giovanildo/torneiofds/
     ├── EAtletaDetailsService.java
     └── ClubeService.java
 ```
+
+## Changelog
+
+Veja [docs/CHANGELOG.md](docs/CHANGELOG.md) para o historico detalhado de mudancas.
 
 ## Origem
 

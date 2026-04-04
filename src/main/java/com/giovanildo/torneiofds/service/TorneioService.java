@@ -3,6 +3,8 @@ package com.giovanildo.torneiofds.service;
 import com.giovanildo.torneiofds.model.*;
 import com.giovanildo.torneiofds.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,13 @@ public class TorneioService {
     private final PremioRepository premioRepository;
     private final EAtletaRepository eAtletaRepository;
     private final ClubeRepository clubeRepository;
+
+    private PremioService premioService;
+
+    @Autowired
+    public void setPremioService(@Lazy PremioService premioService) {
+        this.premioService = premioService;
+    }
 
     public List<Torneio> listarTodos() {
         return torneioRepository.findAll();
@@ -80,6 +89,10 @@ public class TorneioService {
 
         if (competidores.size() < 2) {
             throw new IllegalArgumentException("Precisa de pelo menos 2 competidores");
+        }
+
+        if (!partidaRepository.findByTorneioIdOrderByRodada(torneioId).isEmpty()) {
+            throw new IllegalArgumentException("Partidas ja foram geradas para este torneio");
         }
 
         // Se impar, adiciona null para bye
@@ -163,6 +176,14 @@ public class TorneioService {
         partida.setEncerrada(true);
 
         partidaRepository.save(partida);
+
+        // Gera premios automaticamente quando todas as partidas estao encerradas
+        Long torneioId = partida.getTorneio().getId();
+        List<Partida> todasPartidas = partidaRepository.findByTorneioIdOrderByRodada(torneioId);
+        boolean todasEncerradas = todasPartidas.stream().allMatch(Partida::isEncerrada);
+        if (todasEncerradas && !premioRepository.existsByTorneioId(torneioId)) {
+            premioService.gerarPremios(torneioId);
+        }
     }
 
     /**
