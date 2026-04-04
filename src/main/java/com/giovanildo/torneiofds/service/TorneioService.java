@@ -16,6 +16,7 @@ public class TorneioService {
     private final TorneioRepository torneioRepository;
     private final CompetidorRepository competidorRepository;
     private final PartidaRepository partidaRepository;
+    private final CompetidorEmCampoRepository competidorEmCampoRepository;
     private final EAtletaRepository eAtletaRepository;
     private final ClubeRepository clubeRepository;
 
@@ -34,6 +35,15 @@ public class TorneioService {
             throw new IllegalArgumentException("Torneio com o nome '" + torneio.getNome() + "' ja existe");
         }
         return torneioRepository.save(torneio);
+    }
+
+    @Transactional
+    public void deletar(Long id) {
+        Torneio torneio = buscarPorId(id);
+        competidorEmCampoRepository.deleteByTorneioId(id);
+        partidaRepository.deleteByTorneioId(id);
+        competidorRepository.deleteByTorneioId(id);
+        torneioRepository.delete(torneio);
     }
 
     @Transactional

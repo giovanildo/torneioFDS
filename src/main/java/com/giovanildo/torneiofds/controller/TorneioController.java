@@ -44,6 +44,13 @@ public class TorneioController {
         return TorneioResponse.from(torneioService.salvar(torneio));
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Deletar torneio")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletar(@PathVariable Long id) {
+        torneioService.deletar(id);
+    }
+
     // --- Competidores ---
 
     @GetMapping("/{id}/competidores")
