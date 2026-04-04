@@ -200,7 +200,7 @@ Premio             ----> reconhece   ----> conquista de um EAtleta em um Torneio
 | `CompetidorEmCampo` | Participacao de um competidor em uma partida (gols, mando de campo) |
 | `Classificacao` | POJO calculado com pontos, vitorias, empates, derrotas, saldo de gols |
 | `Premio` | Premiacao de um jogador em um torneio (titulo, artilheiro, coca-cola, etc) |
-| `TipoPremio` | Enum: CAMPEAO, VICE_CAMPEAO, TERCEIRO_LUGAR, ARTILHEIRO, MENOS_VAZADA, COCA_COLA, IBIS |
+| `TipoPremio` | Enum: CAMPEAO, VICE_CAMPEAO, TERCEIRO_LUGAR, ARTILHEIRO, MENOS_VAZADA, COCA_COLA, ESCAPOU_DA_COCA_COLA, IBIS |
 
 ### Regras de classificacao
 
@@ -219,6 +219,7 @@ Premio             ----> reconhece   ----> conquista de um EAtleta em um Torneio
 | Artilheiro | Mais gols pro |
 | Menos Vazada | Menos gols contra |
 | Coca-Cola (Desonra) | Ultimo lugar — deve pagar uma coca-cola como prenda |
+| Escapou da Coca-Cola | Penultimo lugar — escapou por pouco (se 3+ competidores) |
 | Premio Ibis | Antipremio maximo — concedido ao atingir 12 Coca-Colas na carreira |
 
 ## Estrutura do projeto

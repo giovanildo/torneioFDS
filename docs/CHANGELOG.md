@@ -6,6 +6,32 @@ Registro de mudancas do torneioFDS (API + Web).
 
 ## 2026-04-04
 
+### Melhorias no fluxo de torneio e novo premio Escapou da Coca-Cola
+
+Conjunto de melhorias na experiencia de uso do torneio: abas condicionais, botoes +/- para gols, partidas sequenciais com bloqueio, aba de resumo ao final e novo premio.
+
+**API:**
+- Novo valor no enum `TipoPremio`: `ESCAPOU_DA_COCA_COLA` (penultimo lugar)
+- `PremioService.gerarPremios` agora cria premio "Escapou da Coca-Cola" para o penultimo colocado (se 3+ competidores)
+- `PremioResponse` agora inclui campo `nomeEAtleta`
+- `SalaDeTrofeusResponse` agora inclui lista `escapouDaCocaCola`
+- `PremioController` (API) filtra e retorna o novo tipo na sala de trofeus
+
+**Web:**
+- DTOs `PremioResponse` e `SalaDeTrofeusResponse` espelhados com novos campos
+- Abas "Partidas" e "Classificacao" desabilitadas quando nao ha partidas geradas (Bootstrap `disabled`)
+- Nova aba "Resumo" visivel quando todas as partidas estao encerradas — mostra Campeao, Vice, Coca-Cola e Escapou da Coca-Cola
+- Botoes +/- substituem inputs de gols (sem setas do input number)
+- Bloqueio sequencial de partidas: apenas a primeira pendente habilitada por padrao
+- Botao "Desbloquear/Bloquear" manual em cada partida para override
+- Ao confirmar ultima partida, redireciona automaticamente para aba Resumo
+- Novo template `trofeu/resumo.html` com 4 cards de premios
+- Nova secao "Escapou da Coca-Cola" na sala de trofeus (`sala.html`)
+- `PartidaController`, `ClassificacaoController`, `TorneioController` passam flag `todasEncerradas`
+- `PremioController` (Web) novo endpoint `GET /torneios/{id}/resumo`
+
+---
+
 ### Premios automaticos ao final do torneio
 
 Premios agora sao gerados automaticamente quando o ultimo resultado e registrado. Nao e mais necessario acionar manualmente.

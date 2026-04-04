@@ -7,5 +7,6 @@ public enum TipoPremio {
     ARTILHEIRO,
     MENOS_VAZADA,
     COCA_COLA,
+    ESCAPOU_DA_COCA_COLA,
     IBIS
 }

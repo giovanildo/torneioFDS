@@ -83,6 +83,12 @@ public class PremioService {
         Classificacao ultimo = classificacao.get(classificacao.size() - 1);
         premios.add(criarPremio(torneio, porNome, ultimo, TipoPremio.COCA_COLA));
 
+        // Escapou da Coca-Cola (penultimo lugar)
+        if (classificacao.size() >= 3) {
+            Classificacao penultimo = classificacao.get(classificacao.size() - 2);
+            premios.add(criarPremio(torneio, porNome, penultimo, TipoPremio.ESCAPOU_DA_COCA_COLA));
+        }
+
         premioRepository.saveAll(premios);
 
         // Verifica se o ultimo lugar atingiu 12 Coca-Colas -> Premio Ibis

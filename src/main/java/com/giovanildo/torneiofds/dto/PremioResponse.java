@@ -5,6 +5,7 @@ import com.giovanildo.torneiofds.model.Premio;
 public record PremioResponse(
         Long id,
         String tipo,
+        String nomeEAtleta,
         String nomeTorneio,
         String dataTorneio,
         String nomeClube,
@@ -18,6 +19,7 @@ public record PremioResponse(
         return new PremioResponse(
                 p.getId(),
                 p.getTipo().name(),
+                p.getEAtleta().getNome(),
                 p.getTorneio().getNome(),
                 p.getTorneio().getDataTorneio().toString(),
                 p.getClube().getNome(),

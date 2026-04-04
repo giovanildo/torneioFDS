@@ -10,6 +10,7 @@ public record SalaDeTrofeusResponse(
         List<PremioResponse> artilheiros,
         List<PremioResponse> menosVazadas,
         List<PremioResponse> cocaColas,
+        List<PremioResponse> escapouDaCocaCola,
         List<PremioResponse> ibis,
         int totalTorneios,
         int totalTitulos,
