@@ -10,12 +10,14 @@ import java.util.List;
 
 public interface PremioRepository extends JpaRepository<Premio, Long> {
 
+    @Query("SELECT p FROM Premio p WHERE p.eAtleta.id = :eAtletaId")
     List<Premio> findByEAtletaId(Long eAtletaId);
 
     List<Premio> findByTorneioId(Long torneioId);
 
     boolean existsByTorneioId(Long torneioId);
 
+    @Query("SELECT COUNT(p) FROM Premio p WHERE p.eAtleta.id = :eAtletaId AND p.tipo = :tipo")
     long countByEAtletaIdAndTipo(Long eAtletaId, TipoPremio tipo);
 
     @Modifying
