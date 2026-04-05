@@ -9,6 +9,12 @@ import java.util.List;
 
 public interface CompetidorRepository extends JpaRepository<Competidor, Long> {
 
+    @Query("""
+            SELECT c FROM Competidor c
+            JOIN FETCH c.eAtleta
+            JOIN FETCH c.clube
+            WHERE c.torneio.id = :torneioId
+            """)
     List<Competidor> findByTorneioId(Long torneioId);
 
     @Modifying

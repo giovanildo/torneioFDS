@@ -9,6 +9,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +27,10 @@ public class TorneioController {
     private final TorneioService torneioService;
 
     @GetMapping
-    @Operation(summary = "Listar todos os torneios")
-    public List<TorneioResponse> listar() {
-        return torneioService.listarTodos().stream()
-                .map(TorneioResponse::from)
-                .toList();
+    @Operation(summary = "Listar todos os torneios (paginado)")
+    public Page<TorneioResponse> listar(
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return torneioService.listarPaginado(pageable).map(TorneioResponse::from);
     }
 
     @GetMapping("/{id}")
@@ -42,6 +45,12 @@ public class TorneioController {
     public TorneioResponse criar(@Valid @RequestBody TorneioRequest request) {
         Torneio torneio = new Torneio(request.nome(), request.porqueDoNome());
         return TorneioResponse.from(torneioService.salvar(torneio));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Editar torneio")
+    public TorneioResponse editar(@PathVariable Long id, @Valid @RequestBody TorneioRequest request) {
+        return TorneioResponse.from(torneioService.editar(id, request.nome(), request.porqueDoNome()));
     }
 
     @DeleteMapping("/{id}")
@@ -102,10 +111,7 @@ public class TorneioController {
                                               @PathVariable Long partidaId,
                                               @Valid @RequestBody ResultadoRequest request) {
         torneioService.registrarResultado(partidaId, request.golsAnfitriao(), request.golsVisitante());
-        Partida partida = torneioService.listarPartidas(id).stream()
-                .filter(p -> p.getId().equals(partidaId))
-                .findFirst()
-                .orElseThrow();
+        Partida partida = torneioService.buscarPartida(partidaId);
         return PartidaResponse.from(partida);
     }
 
@@ -115,5 +121,13 @@ public class TorneioController {
     @Operation(summary = "Tabela de classificacao do torneio")
     public List<com.giovanildo.torneiofds.model.Classificacao> classificacao(@PathVariable Long id) {
         return torneioService.calcularClassificacao(id);
+    }
+
+    // --- Confronto direto ---
+
+    @GetMapping("/confronto")
+    @Operation(summary = "Historico de confrontos diretos entre dois jogadores")
+    public ConfrontoResponse confrontoDireto(@RequestParam Long jogador1, @RequestParam Long jogador2) {
+        return torneioService.confrontoDireto(jogador1, jogador2);
     }
 }

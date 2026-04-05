@@ -8,6 +8,12 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.giovanildo.torneiofds.dto.ConfrontoResponse;
+import com.giovanildo.torneiofds.dto.PartidaResponse;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,6 +40,10 @@ public class TorneioService {
         return torneioRepository.findAllByOrderByIdDesc();
     }
 
+    public Page<Torneio> listarPaginado(Pageable pageable) {
+        return torneioRepository.findAll(pageable);
+    }
+
     public Torneio buscarPorId(Long id) {
         return torneioRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Torneio nao encontrado"));
@@ -44,6 +54,17 @@ public class TorneioService {
         if (torneioRepository.existsByNome(torneio.getNome())) {
             throw new IllegalArgumentException("Torneio com o nome '" + torneio.getNome() + "' ja existe");
         }
+        return torneioRepository.save(torneio);
+    }
+
+    @Transactional
+    public Torneio editar(Long id, String nome, String porqueDoNome) {
+        Torneio torneio = buscarPorId(id);
+        if (!torneio.getNome().equals(nome) && torneioRepository.existsByNome(nome)) {
+            throw new IllegalArgumentException("Torneio com o nome '" + nome + "' ja existe");
+        }
+        torneio.setNome(nome);
+        torneio.setPorqueDoNome(porqueDoNome);
         return torneioRepository.save(torneio);
     }
 
@@ -162,13 +183,18 @@ public class TorneioService {
         return (jogo % 2 == 1 || (rodada % 2 == 1 && jogo == 0));
     }
 
+    public Partida buscarPartida(Long partidaId) {
+        return partidaRepository.findByIdWithCompetidores(partidaId)
+                .orElseThrow(() -> new NoSuchElementException("Partida nao encontrada"));
+    }
+
     public List<Partida> listarPartidas(Long torneioId) {
         return partidaRepository.findByTorneioIdOrderByRodada(torneioId);
     }
 
     @Transactional
     public void registrarResultado(Long partidaId, int golsAnfitriao, int golsVisitante) {
-        Partida partida = partidaRepository.findById(partidaId)
+        Partida partida = partidaRepository.findByIdWithCompetidores(partidaId)
                 .orElseThrow(() -> new NoSuchElementException("Partida nao encontrada"));
 
         partida.getAnfitriao().setGols(golsAnfitriao);
@@ -196,6 +222,7 @@ public class TorneioService {
         Map<Long, Classificacao> mapa = new LinkedHashMap<>();
         for (Competidor c : competidores) {
             Classificacao cl = new Classificacao();
+            cl.setCompetidorId(c.getId());
             cl.setNomeEAtleta(c.getEAtleta().getNome());
             cl.setNomeclube(c.getClube().getNome());
             mapa.put(c.getId(), cl);
@@ -239,5 +266,37 @@ public class TorneioService {
         return mapa.values().stream()
                 .sorted()
                 .collect(Collectors.toList());
+    }
+
+    public ConfrontoResponse confrontoDireto(Long eAtletaId1, Long eAtletaId2) {
+        EAtleta j1 = eAtletaRepository.findById(eAtletaId1)
+                .orElseThrow(() -> new NoSuchElementException("Jogador 1 nao encontrado"));
+        EAtleta j2 = eAtletaRepository.findById(eAtletaId2)
+                .orElseThrow(() -> new NoSuchElementException("Jogador 2 nao encontrado"));
+
+        List<Partida> partidas = partidaRepository.findConfrontosDiretos(eAtletaId1, eAtletaId2);
+
+        int v1 = 0, v2 = 0, empates = 0, g1 = 0, g2 = 0;
+        for (Partida p : partidas) {
+            int golsJ1 = 0, golsJ2 = 0;
+            for (CompetidorEmCampo cec : p.getCompetidoresEmCampo()) {
+                if (cec.getCompetidor().getEAtleta().getId().equals(eAtletaId1)) {
+                    golsJ1 = cec.getGols();
+                } else if (cec.getCompetidor().getEAtleta().getId().equals(eAtletaId2)) {
+                    golsJ2 = cec.getGols();
+                }
+            }
+            g1 += golsJ1;
+            g2 += golsJ2;
+            if (golsJ1 > golsJ2) v1++;
+            else if (golsJ2 > golsJ1) v2++;
+            else empates++;
+        }
+
+        return new ConfrontoResponse(
+                j1.getNome(), j2.getNome(),
+                v1, v2, empates, g1, g2,
+                partidas.stream().map(PartidaResponse::from).toList()
+        );
     }
 }

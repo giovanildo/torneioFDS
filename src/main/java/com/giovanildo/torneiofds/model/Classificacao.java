@@ -7,6 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 public class Classificacao implements Comparable<Classificacao> {
 
+    private Long competidorId;
     private String nomeEAtleta;
     private String nomeclube;
     private int pontos;

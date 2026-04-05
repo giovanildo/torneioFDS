@@ -11,9 +11,12 @@ Organiza campeonatos no formato **todos contra todos** (round-robin), com turno 
 | Linguagem | Java 21 LTS |
 | Framework | Spring Boot 3.4 |
 | ORM | Spring Data JPA + Hibernate 6 |
-| Banco de dados | SQLite (arquivo local) |
+| Banco de dados | SQLite (arquivo local) / H2 (perfil alternativo) |
+| Migracoes | Flyway (apenas H2 — SQLite nao suportado) |
 | Autenticacao | Spring Security + HTTP Basic + BCrypt |
 | Documentacao | Swagger / OpenAPI 3 (springdoc) |
+| Testes | JUnit 5 + Spring Boot Test + H2 |
+| Container | Docker (multi-stage build) |
 | Build | Maven |
 
 ## Requisitos
@@ -23,6 +26,8 @@ Organiza campeonatos no formato **todos contra todos** (round-robin), com turno 
 
 ## Como rodar
 
+### Direto
+
 ```bash
 git clone https://github.com/giovanildo/torneioFDS.git
 cd torneioFDS
@@ -30,6 +35,14 @@ mvn spring-boot:run
 ```
 
 A aplicacao sobe em `http://localhost:8080`.
+
+### Docker Compose (API + Web)
+
+```bash
+docker compose up --build
+```
+
+API em `http://localhost:8080`, Web em `http://localhost:8081`.
 
 Na primeira execucao, sao criados automaticamente: usuario admin, clubes iniciais e 13 torneios ficticios com 4 jogadores e premios gerados.
 
@@ -63,10 +76,12 @@ Com a aplicacao rodando, acesse:
 
 | Metodo | Endpoint | Descricao |
 |---|---|---|
-| GET | `/api/torneios` | Listar todos os torneios |
+| GET | `/api/torneios?page=0&size=10` | Listar torneios (paginado) |
 | POST | `/api/torneios` | Criar novo torneio |
 | GET | `/api/torneios/{id}` | Buscar torneio por ID |
+| PUT | `/api/torneios/{id}` | Editar nome e descricao do torneio |
 | DELETE | `/api/torneios/{id}` | Deletar torneio e todos os dados associados |
+| GET | `/api/torneios/confronto?jogador1=X&jogador2=Y` | Historico de confrontos diretos |
 
 ### Competidores (autenticado)
 
@@ -247,7 +262,8 @@ src/main/java/com/giovanildo/torneiofds/
 │   ├── PartidaResponse.java
 │   ├── EAtletaResponse.java
 │   ├── PremioResponse.java
-│   └── SalaDeTrofeusResponse.java
+│   ├── SalaDeTrofeusResponse.java
+│   └── ConfrontoResponse.java
 ├── model/
 │   ├── EAtleta.java
 │   ├── Clube.java

@@ -47,56 +47,55 @@ public class PremioService {
             throw new IllegalArgumentException("Torneio precisa de pelo menos 2 competidores com partidas encerradas");
         }
 
-        // Mapa de nome do eAtleta -> competidor (para buscar entidade)
+        // Mapa de competidorId -> competidor
         List<Competidor> competidores = competidorRepository.findByTorneioId(torneioId);
-        Map<String, Competidor> porNome = new HashMap<>();
+        Map<Long, Competidor> porId = new HashMap<>();
         for (Competidor c : competidores) {
-            porNome.put(c.getEAtleta().getNome(), c);
+            porId.put(c.getId(), c);
         }
 
         List<Premio> premios = new ArrayList<>();
 
         // Campeao (1o lugar)
-        premios.add(criarPremio(torneio, porNome, classificacao.get(0), TipoPremio.CAMPEAO));
+        premios.add(criarPremio(torneio, porId, classificacao.get(0), TipoPremio.CAMPEAO));
 
         // Vice (2o lugar)
-        premios.add(criarPremio(torneio, porNome, classificacao.get(1), TipoPremio.VICE_CAMPEAO));
+        premios.add(criarPremio(torneio, porId, classificacao.get(1), TipoPremio.VICE_CAMPEAO));
 
         // Artilheiro (mais gols pro)
         Classificacao artilheiro = classificacao.stream()
                 .max(Comparator.comparingInt(Classificacao::getGolsPro))
                 .orElseThrow();
-        premios.add(criarPremio(torneio, porNome, artilheiro, TipoPremio.ARTILHEIRO));
+        premios.add(criarPremio(torneio, porId, artilheiro, TipoPremio.ARTILHEIRO));
 
         // Menos Vazada (menos gols contra)
         Classificacao menosVazada = classificacao.stream()
                 .min(Comparator.comparingInt(Classificacao::getGolsContra))
                 .orElseThrow();
-        premios.add(criarPremio(torneio, porNome, menosVazada, TipoPremio.MENOS_VAZADA));
+        premios.add(criarPremio(torneio, porId, menosVazada, TipoPremio.MENOS_VAZADA));
 
         // Coca-Cola (ultimo lugar)
         Classificacao ultimo = classificacao.get(classificacao.size() - 1);
-        premios.add(criarPremio(torneio, porNome, ultimo, TipoPremio.COCA_COLA));
+        premios.add(criarPremio(torneio, porId, ultimo, TipoPremio.COCA_COLA));
 
         // Escapou da Coca-Cola (penultimo lugar)
         if (classificacao.size() >= 3) {
             Classificacao penultimo = classificacao.get(classificacao.size() - 2);
-            premios.add(criarPremio(torneio, porNome, penultimo, TipoPremio.ESCAPOU_DA_COCA_COLA));
+            premios.add(criarPremio(torneio, porId, penultimo, TipoPremio.ESCAPOU_DA_COCA_COLA));
         }
 
         premioRepository.saveAll(premios);
 
         // Verifica se o ultimo lugar atingiu 12 Coca-Colas -> Premio Ibis
-        Competidor compUltimo = porNome.get(ultimo.getNomeEAtleta());
+        Competidor compUltimo = porId.get(ultimo.getCompetidorId());
         if (compUltimo != null) {
             long totalCocas = premioRepository.countByEAtletaIdAndTipo(
                     compUltimo.getEAtleta().getId(), TipoPremio.COCA_COLA);
             if (totalCocas >= 12) {
-                // Verifica se ja nao tem Ibis
                 long ibisExistente = premioRepository.countByEAtletaIdAndTipo(
                         compUltimo.getEAtleta().getId(), TipoPremio.IBIS);
                 if (ibisExistente == 0) {
-                    Premio ibis = criarPremio(torneio, porNome, ultimo, TipoPremio.IBIS);
+                    Premio ibis = criarPremio(torneio, porId, ultimo, TipoPremio.IBIS);
                     premioRepository.save(ibis);
                     premios.add(ibis);
                 }
@@ -106,9 +105,9 @@ public class PremioService {
         return premios;
     }
 
-    private Premio criarPremio(Torneio torneio, Map<String, Competidor> porNome,
+    private Premio criarPremio(Torneio torneio, Map<Long, Competidor> porId,
                                Classificacao cl, TipoPremio tipo) {
-        Competidor comp = porNome.get(cl.getNomeEAtleta());
+        Competidor comp = porId.get(cl.getCompetidorId());
         Premio premio = new Premio(torneio, comp.getEAtleta(), comp.getClube(), tipo);
         premio.setPontos(cl.getPontos());
         premio.setGolsPro(cl.getGolsPro());
